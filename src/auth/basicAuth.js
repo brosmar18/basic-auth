@@ -1,21 +1,27 @@
 'use strict';
 
 const base64 = require('base-64');
-const { userCollection } = require('../models');
+const bcrypt = require('bcrypt');
+const { userModel } = require('../models');
 
-module.exports = async (req, res, next) => {
-    if (!req.headers.authorization) {
-        next('Invalid login');
-        return;
-    }
+const basicAuth = async (req, res, next) => {
+    let { authorization } = req.headers;
+    let authString = authorization.split(' ')[1];
+    let decodedAuthString = base64.decode(authString);
+    let [username, password] = decodedAuthString.split(':');
+    let user = await userModel.findOne({ where: {username} });
 
-    let basicAuth = req.headers.authorization.split(' ').pop();
-    let [username, password] = base64.decode(basicAuth).split(':');
-
-    try {
-        req.user = await userCollection.authenticateBasic(username, password);
-        next();
-    } catch (e) {
-        res.status(403).send('Invalid Login');
+    if(user) {
+        let validUser = await bcrypt.compare(password, user.password);
+        if(validUser){
+            req.user = user;
+            next();
+        } else {
+            next('Not Authorized (password incorrect)');
+        }
+    } else {
+        next('Not Authorized (user doesn\'t exist in DB');
     }
 };
+
+module.exports = basicAuth;

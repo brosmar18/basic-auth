@@ -14,5 +14,6 @@ const userModel = user(sequelizeDatabase, DataTypes);
 
 module.exports = {
     sequelizeDatabase,
+    userModel,
     userCollection: new Collection(userModel),
 };
