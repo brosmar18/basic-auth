@@ -1,7 +1,7 @@
 'use strict';
 
 const express = require('express');
-const { sequelizeDatabase } = require('./models');
+const notFound = require('./handlers/404');
 const authRouter = require('./routes/auth');
 
 const PORT = process.env.PORT || 5000;
@@ -16,6 +16,8 @@ app.use(authRouter);
 app.get('/', (req, res, next) => {
     res.status(200).send("Hello World!");
 });
+
+app.use('*', notFound);
 
 const start = () => {
     app.listen(PORT, () => console.log(`Server is running on PORT: ${PORT}`));
