@@ -6,6 +6,12 @@ const { userModel } = require('../models');
 
 const basicAuth = async (req, res, next) => {
     let { authorization } = req.headers;
+
+    if (!authorization) {
+        res.status(401).send('No authorization header provided');
+        return;
+    }
+
     let authString = authorization.split(' ')[1];
     let decodedAuthString = base64.decode(authString);
     let [username, password] = decodedAuthString.split(':');
@@ -17,11 +23,12 @@ const basicAuth = async (req, res, next) => {
             req.user = user;
             next();
         } else {
-            next('Not Authorized (password incorrect)');
+            res.status(403).send('Not Authorized (password incorrect)');
         }
     } else {
-        next('Not Authorized (user doesn\'t exist in DB');
+        res.status(403).send('Not Authorized (user doesn\'t exist in DB');
     }
 };
+
 
 module.exports = basicAuth;
